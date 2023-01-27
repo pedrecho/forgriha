@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 	"html"
@@ -19,17 +20,34 @@ type User struct {
 }
 
 func GetUserByID(uid uint) (User, error) {
-
 	var u User
-
 	if err := DB.First(&u, uid).Error; err != nil {
 		return u, errors.New("User not found!")
 	}
-
 	u.PrepareGive()
-
 	return u, nil
+}
 
+func GetUserByUsername(username string) (User, error) {
+	var u User
+	err := DB.Model(User{}).Where("username = ?", username).Take(&u).Error
+	if err != nil {
+		return u, errors.New("User not found!")
+	}
+	fmt.Println(u)
+	u.PrepareGive()
+	return u, nil
+}
+
+func GetUserByEmail(email string) (User, error) {
+	var u User
+	err := DB.Model(User{}).Where("email = ?", email).Take(&u).Error
+	if err != nil {
+		return u, errors.New("User not found!")
+	}
+	fmt.Println(u)
+	u.PrepareGive()
+	return u, nil
 }
 
 func (u *User) PrepareGive() {

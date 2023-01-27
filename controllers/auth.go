@@ -52,7 +52,7 @@ func Login(c *gin.Context) {
 	token, err := models.LoginCheck(u.Username, u.Password)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "username or password is incorrect."})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "username or password is incorrect"})
 		return
 	}
 
@@ -71,7 +71,6 @@ type RegisterInput struct {
 func Register(c *gin.Context) {
 
 	var input RegisterInput
-
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -79,15 +78,24 @@ func Register(c *gin.Context) {
 
 	email := strings.ToLower(input.Email)
 	if _, err := mail.ParseAddress(email); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if !(len(input.Password) >= 8 && len(input.Password) <= 24) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Password must be between 8 and 24 characters"})
 		return
 	}
 
-	if len(input.Password) > 4 && len(input.Password) < 25 {
+	if _, err := models.GetUserByUsername(email); err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email already taken"})
+		return
+	}
+	if _, err := models.GetUserByEmail(email); err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email already taken"})
 		return
 	}
 
 	u := models.User{}
-
 	u.Username = input.Username
 	u.Password = input.Password
 	u.Email = email
