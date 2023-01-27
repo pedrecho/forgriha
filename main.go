@@ -13,7 +13,7 @@ func main() {
 	models.ConnectDataBase()
 
 	r := gin.Default()
-	r.Use(cors.Default())
+	r.Use(cors.AllowAll())
 
 	r.Static("/static", "./static")
 

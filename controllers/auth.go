@@ -1,10 +1,14 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"net/http"
+	"net/mail"
 	"schedule/models"
 	"schedule/utils/token"
+	"strings"
 )
 
 func CurrentUser(c *gin.Context) {
@@ -34,7 +38,7 @@ type LoginInput struct {
 func Login(c *gin.Context) {
 
 	var input LoginInput
-
+	fmt.Println(ioutil.ReadAll(c.Request.Body))
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -73,11 +77,20 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	email := strings.ToLower(input.Email)
+	if _, err := mail.ParseAddress(email); err != nil {
+		return
+	}
+
+	if len(input.Password) > 4 && len(input.Password) < 25 {
+		return
+	}
+
 	u := models.User{}
 
 	u.Username = input.Username
 	u.Password = input.Password
-	u.Email = input.Email
+	u.Email = email
 	u.FirstName = input.FirstName
 	u.LastName = input.LastName
 

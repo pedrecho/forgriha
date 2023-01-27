@@ -2,12 +2,11 @@ package models
 
 import (
 	"errors"
-	"html"
-	"strings"
-
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
+	"html"
 	"schedule/utils/token"
+	"strings"
 )
 
 type User struct {
@@ -81,13 +80,13 @@ func (u *User) SaveUser() (*User, error) {
 
 func (u *User) BeforeSave() error {
 
+	u.Username = html.EscapeString(strings.TrimSpace(u.Username))
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 	u.Password = string(hashedPassword)
-
-	u.Username = html.EscapeString(strings.TrimSpace(u.Username))
 
 	return nil
 
